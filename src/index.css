@@ -4,27 +4,72 @@
   --color-aureum-400: #FACC15;
   --color-aureum-500: #EAB308;
   --color-aureum-600: #CA8A04;
+  
+  --color-slate-800: #1E293B;
   --color-slate-850: #0F172A;
   --color-slate-900: #0B0F19;
   --color-slate-950: #020617;
+
+  /* Cyber Tokens for Landing Page */
+  --color-cyber-bg: #050510;
+  --color-cyber-cyan: #06b6d4;
+  --color-cyber-pink: #db2777;
+  --color-cyber-yellow: #facc15;
+  
   --font-sans: "Inter", "system-ui", "sans-serif";
+  --font-serif: "Outfit", "system-ui", "sans-serif";
 }
 
-body {
-  @apply bg-slate-900 text-slate-100 font-sans antialiased;
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 shadow-2xl;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-aureum-400 to-aureum-600;
+  }
+  
+  .bg-brick {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+    background-size: 60px 30px;
+  }
+
+  .pill-nav {
+    @apply px-4 py-1.5 rounded-full bg-white text-cyber-bg font-black text-sm;
+  }
 }
 
 /* Custom scrollbar for premium feel */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #020617; 
+  background: transparent; 
 }
 ::-webkit-scrollbar-thumb {
   background: #1e293b; 
-  border-radius: 4px;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #334155; 
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

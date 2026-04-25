@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
 import { Fingerprint, CheckCircle2, ShieldAlert, Activity, Lock, MoreVertical } from 'lucide-react';
 import { API_Service } from '../services/API_Service';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const IssuingView = () => {
   const [isIssuing, setIsIssuing] = useState(false);
+  const [issuedResult, setIssuedResult] = useState(null);
+  const [subjectName, setSubjectName] = useState('Julian Alexander Thorne');
+  const [credClass, setCredClass] = useState('Sovereign Tier 1 (Ultra)');
 
   const handleIssue = async () => {
     setIsIssuing(true);
-    await API_Service.issueCredential({});
+    setIssuedResult(null);
+    const result = await API_Service.issueCredential({
+      name: subjectName,
+      class: credClass
+    });
     setIsIssuing(false);
-    // In a real app we might show a success toast here
+    setIssuedResult(result);
   };
 
   return (
@@ -44,13 +52,18 @@ const IssuingView = () => {
               <label className="block text-xs text-slate-400 uppercase tracking-wider mb-2 font-semibold">Subject Identity Name</label>
               <input 
                 type="text" 
-                defaultValue="e.g. Julian Alexander Thorne" 
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-aureum-500 text-slate-300"
+                value={subjectName}
+                onChange={(e) => setSubjectName(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-aureum-500 text-slate-100"
               />
             </div>
             <div>
               <label className="block text-xs text-slate-400 uppercase tracking-wider mb-2 font-semibold">Credential Class</label>
-              <select className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-aureum-500 text-slate-300 appearance-none">
+              <select 
+                value={credClass}
+                onChange={(e) => setCredClass(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-aureum-500 text-slate-100 appearance-none"
+              >
                 <option>Sovereign Tier 1 (Ultra)</option>
                 <option>Sovereign Tier 2 (High)</option>
                 <option>Standard Identity</option>
@@ -90,6 +103,42 @@ const IssuingView = () => {
               {isIssuing ? 'Initializing...' : 'Initialize Sovereign Issuance'}
             </button>
           </div>
+
+          <AnimatePresence>
+            {issuedResult && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className={`mt-6 p-4 border rounded-lg ${
+                  issuedResult.status === 'success' || issuedResult.success
+                    ? 'bg-emerald-500/10 border-emerald-500/30' 
+                    : 'bg-red-500/10 border-red-500/30'
+                }`}
+              >
+                {issuedResult.status === 'success' || issuedResult.success ? (
+                  <>
+                    <div className="flex items-center gap-2 text-emerald-400 font-bold mb-3">
+                      <CheckCircle2 className="w-4 h-4" /> Credential Issued Successfully
+                    </div>
+                    {issuedResult.data && (
+                      <div className="bg-slate-900 p-4 rounded-lg border border-emerald-500/20 mb-4">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Generated Identity ID</div>
+                        <div className="text-xl font-mono text-aureum-500 font-bold">{issuedResult.data.id}</div>
+                        <p className="text-[10px] text-slate-400 mt-2">Use this ID in the <b>Universal Verifier</b> to test the credential.</p>
+                      </div>
+                    )}
+                    <div className="text-xs text-slate-500 font-mono truncate opacity-50">
+                      TXID: {issuedResult.transactionHash || '0x...'}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 text-red-400 font-bold">
+                    <ShieldAlert className="w-4 h-4" /> {issuedResult.message || 'System Issuance Failed'}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -142,6 +191,15 @@ const IssuingView = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
+            {issuedResult && (
+              <tr className="text-emerald-400/90 animate-pulse bg-emerald-500/5">
+                <td className="py-4 font-mono text-xs truncate max-w-[120px]">{issuedResult.transactionHash}</td>
+                <td className="py-4 flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs">J</div> {subjectName}</td>
+                <td className="py-4 text-emerald-500/60 font-mono uppercase text-[10px]">Just Now</td>
+                <td className="py-4"><span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20 text-xs font-medium">Processing</span></td>
+                <td className="py-4 text-right"><button className="text-slate-500 hover:text-slate-300"><MoreVertical className="w-4 h-4 inline" /></button></td>
+              </tr>
+            )}
             <tr className="text-slate-300">
               <td className="py-4 font-mono text-xs">0x38fa...c982</td>
               <td className="py-4 flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs">E</div> Elena Vance</td>
@@ -154,13 +212,6 @@ const IssuingView = () => {
               <td className="py-4 flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs">M</div> Marcus Aurelius</td>
               <td className="py-4 text-slate-500">15 mins ago</td>
               <td className="py-4"><span className="px-2 py-1 bg-aureum-500/10 text-aureum-500 rounded border border-aureum-500/20 text-xs font-medium">Verified</span></td>
-              <td className="py-4 text-right"><button className="text-slate-500 hover:text-slate-300"><MoreVertical className="w-4 h-4 inline" /></button></td>
-            </tr>
-            <tr className="text-slate-300">
-              <td className="py-4 font-mono text-xs">0x00ba...f111</td>
-              <td className="py-4 flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs">S</div> Sarah Jenkins</td>
-              <td className="py-4 text-slate-500">1 hour ago</td>
-              <td className="py-4"><span className="px-2 py-1 bg-slate-800 text-slate-400 rounded border border-slate-700 text-xs font-medium">Pending</span></td>
               <td className="py-4 text-right"><button className="text-slate-500 hover:text-slate-300"><MoreVertical className="w-4 h-4 inline" /></button></td>
             </tr>
           </tbody>
