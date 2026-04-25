@@ -10,7 +10,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
-const SECRET_KEY = "IDENTITY_VERIFICATION_SECRET_2026";
+const SECRET_KEY = import.meta.env.VITE_IDENTITY_SECRET || "IDENTITY_VERIFICATION_SECRET_2026";
 
 // Helper to create hash in JS (for demo/benchmark purposes)
 const createHash = async (id) => {

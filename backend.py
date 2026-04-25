@@ -4,11 +4,14 @@ import json
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-SECRET_KEY = "IDENTITY_VERIFICATION_SECRET_2026"
+SECRET_KEY = os.getenv("VITE_IDENTITY_SECRET", "IDENTITY_VERIFICATION_SECRET_2026")
 DB_FILE = "database.json"
 DATA_STORE = {}
 SYSTEM_LOCKED = False
